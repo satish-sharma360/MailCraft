@@ -4,22 +4,19 @@ import axios from "axios";
 export const AuthContext = createContext();
 
 const API_URL = `${import.meta.env.VITE_BACKEND_URL}/auth`;
+console.log("🔗 API_URL:", API_URL);
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [accessToken, setAccessToken] = useState(
-    localStorage.getItem("accessToken") || null
-  );
-  const [refreshToken, setRefreshToken] = useState(
-    localStorage.getItem("refreshToken") || null
-  );
+  const [accessToken, setAccessToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const axiosInstance = axios.create({
     baseURL: API_URL,
-    withCredentials: true,
+    withCredentials: true, // send cookies
   });
 
-  // Axios interceptor for auto-refresh
+  // ------------------ Interceptor ------------------
   axiosInstance.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -27,22 +24,20 @@ const AuthProvider = ({ children }) => {
       if (
         error.response &&
         error.response.status === 401 &&
-        !originalRequest._retry &&
-        refreshToken
+        !originalRequest._retry
       ) {
         originalRequest._retry = true;
+        console.log("🔄 Refreshing token...");
         try {
-          const res = await axios.post(`${API_URL}/refresh-token`, {
-            refreshToken,
-          });
+          const res = await axiosInstance.post("/refresh-token");
+          console.log("✅ New AccessToken:", res.data.accessToken);
           setAccessToken(res.data.accessToken);
-          localStorage.setItem("accessToken", res.data.accessToken);
           originalRequest.headers[
             "Authorization"
           ] = `Bearer ${res.data.accessToken}`;
           return axiosInstance(originalRequest);
         } catch (err) {
-          console.log("Refresh failed", err);
+          console.error("❌ Refresh failed:", err.message);
           logOut();
         }
       }
@@ -50,61 +45,69 @@ const AuthProvider = ({ children }) => {
     }
   );
 
-  const signup = async (res) => {
-    const { data } = await axios.post(`${API_URL}/signup`, res);
+  // ------------------ Auth functions ------------------
+
+  const signup = async (formData) => {
+    console.log("📩 Signup payload:", formData);
+    const { data } = await axiosInstance.post("/signup", formData);
+    console.log("✅ Signup response:", data);
     setAccessToken(data.accessToken);
     setUser(data.user);
-    setRefreshToken(data.refreshToken);
-
-    localStorage.setItem("refreshToken", data.refreshToken);
-    localStorage.setItem("accessToken", data.accessToken);
     return data;
   };
 
-  const login = async (data) => {
-    console.log("Login payload:", data);
-    const res = await axios.post(`${API_URL}/login`, data);
-    setAccessToken(res.data.accessToken);
-    setUser(res.data.user);
-    setRefreshToken(res.data.refreshToken);
-
-    localStorage.setItem("refreshToken", res.data.refreshToken);
-    localStorage.setItem("accessToken", res.data.accessToken);
-    return res.data;
+  const login = async (formData) => {
+    console.log("📩 Login payload:", formData);
+    const { data } = await axiosInstance.post("/login", formData);
+    console.log("✅ Login response:", data);
+    setAccessToken(data.accessToken);
+    setUser(data.user);
+    return data;
   };
 
   const logOut = () => {
+    console.log("🚪 Logging out...");
     setUser(null);
     setAccessToken(null);
-    setRefreshToken(null);
-    localStorage.clear();
+    setLoading(false);
   };
 
-  useEffect(() => {
-    const refreshAccessToken = async () => {
-      try {
-        const res = await axios.post(
-          `${API_URL}/refresh-token`,
-          { refreshToken: localStorage.getItem("refreshToken") },
-          { withCredentials: true }
-        );
-        setAccessToken(res.data.accessToken);
-        localStorage.setItem("accessToken", res.data.accessToken);
-      } catch (err) {
-        console.log("Refresh token expired, please login again");
-        setAccessToken(null);
-        localStorage.removeItem("accessToken");
-      }
-    };
-
-    if (!accessToken && refreshToken) {
-      refreshAccessToken();
+  const fetchCurrentUser = async () => {
+    console.log("📡 Fetching current user...");
+    setLoading(true);
+    try {
+      const res = await axiosInstance.get("/get-current-user");
+      console.log("✅ Current user fetched:", res.data.user);
+      setUser(res.data.user);
+    } catch (error) {
+      console.error("❌ Failed to fetch user:", error.message);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-  }, [accessToken, refreshToken]);
+  };
+  useEffect(() => {
+    const storedToken = localStorage.getItem("accessToken");
+    if (storedToken) setAccessToken(storedToken);
+  }, []);
+
+  // ------------------ Effects ------------------
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, []);
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, refreshToken, signup, login, logOut, axiosInstance }}
+      value={{
+        user,
+        accessToken,
+        signup,
+        login,
+        logOut,
+        axiosInstance,
+        loading,
+      }}
     >
       {children}
     </AuthContext.Provider>

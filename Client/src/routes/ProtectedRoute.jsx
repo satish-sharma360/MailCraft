@@ -1,13 +1,15 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
-const ProtectedRoute = () => {
-  const { accessToken } = useContext(AuthContext);
-  if (!accessToken) {
-    return <Navigate to="/" replace />;
-  }
-  return <Outlet/>;
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useContext(AuthContext);
+
+  if (loading) return <div>Loading...</div>; // show spinner while checking
+
+  if (!user) return <Navigate to="/login" replace />;
+
+  return children;
 };
 
 export default ProtectedRoute;
