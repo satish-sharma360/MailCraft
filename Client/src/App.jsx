@@ -1,20 +1,24 @@
 import { Route, Routes } from "react-router-dom";
 import LoginPage from "./components/auth/LoginPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
-import DashboardLayout from "./components/layout/DashboardLayout";
 import RegisterPage from "./components/auth/RegisterPage";
+import Leanding from "./components/pages/Leanding";
+import Dashboard from "./components/pages/Dashboard";
+import EditorPage from "./components/Editor/EditorPage";
 
 const App = () => {
   return (
     <div>
       <Routes>
+        <Route path="/" element={<Leanding/>}/>
+        <Route path="/test" element={<EditorPage/>}/>
         <Route path="/login" element={<LoginPage/>}/>
         <Route path="/register" element={<RegisterPage/>}/>
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardLayout />
+              <Dashboard />
             </ProtectedRoute>
           }
         />

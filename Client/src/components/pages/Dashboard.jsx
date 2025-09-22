@@ -1,58 +1,23 @@
-import { Eye, Mail, Send, TrendingUp } from "lucide-react";
+import React from 'react'
+import Navbar from './Navbar'
+import { useContext } from 'react'
+import { AuthContext } from '../../context/AuthContext'
+import EmailTemplateList from '../core/EmailTemplateList'
 
-// { user }
-const Dashboard = () => (
-  <div className="p-6 space-y-6">
+const Dashboard = () => {
+    const {user} = useContext(AuthContext)
+  return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Dashboard</h1>
-      <p className="text-gray-600">Welcome back, John Doe! Here's your email campaign overview.</p>
-    </div>
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {[
-        { label: 'Total Campaigns', value: '24', icon: Mail, color: 'blue' },
-        { label: 'Emails Sent', value: '12.5K', icon: Send, color: 'green' },
-        { label: 'Open Rate', value: '24.8%', icon: Eye, color: 'purple' },
-        { label: 'Click Rate', value: '4.2%', icon: TrendingUp, color: 'orange' }
-      ].map((stat, index) => {
-        const Icon = stat.icon;
-        return (
-          <div key={index} className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">{stat.label}</p>
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-              </div>
-              <Icon className={`text-${stat.color}-600`} size={32} />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-    
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Campaigns</h2>
-      <div className="space-y-4">
-        {[
-          { name: 'Summer Sale Newsletter', status: 'Sent', date: '2 hours ago' },
-          { name: 'Product Launch Announcement', status: 'Draft', date: '1 day ago' },
-          { name: 'Weekly Newsletter', status: 'Sent', date: '3 days ago' }
-        ].map((campaign, index) => (
-          <div key={index} className="flex items-center justify-between py-3 border-b last:border-b-0">
-            <div>
-              <p className="font-medium text-gray-900">{campaign.name}</p>
-              <p className="text-sm text-gray-600">{campaign.date}</p>
-            </div>
-            <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-              campaign.status === 'Sent' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-            }`}>
-              {campaign.status}
-            </span>
-          </div>
-        ))}
+      <Navbar/>
+      <div className='p-10 mt-16 md:px-28 lg:px-40 xl:px-56'>
+        <div className='flex items-center justify-between mb-6'>
+            <h2 className='font-medium text-3xl'>👋Hello ,{user.firstName} {user.lastName}</h2>
+            <button className='px-6 py-2 rounded-full bg-blue-500 text-white cursor-pointer transition-all duration-200 hover:scale-95'>+ Create New Email Template</button>
+        </div>
+        <EmailTemplateList/>
       </div>
     </div>
-  </div>
-);
+  )
+}
 
 export default Dashboard
