@@ -18,6 +18,15 @@ const ElementSidebar = () => {
         })
     }
 
+    const onDragElementStart = (element) =>{
+        setdragElement({
+            dragElementLayout:{
+                ...element,
+                id:Date.now()
+            }
+        })
+    }
+
 
   return (
     <div className="p-5 h-full shadow-md">
@@ -33,7 +42,7 @@ const ElementSidebar = () => {
       <h2 className="font-semibold text-2xl mt-6">Elements</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-3">
         {ElementList.map((element, index) => (
-          <div key={index} draggable>
+          <div key={index} draggable onDragStart={()=>onDragElementStart(element)}>
             <ElementLayoutCart elem={element} />
           </div>
         ))}
