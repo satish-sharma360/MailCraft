@@ -11,7 +11,7 @@ import {
   SquareSplitVertical,
   Text,
   TextSelectionIcon,
-  Instagram ,
+  Instagram,
 } from "lucide-react";
 
 export default [
@@ -26,10 +26,19 @@ export default [
       backgroundColor: "#007bff",
       color: "#ffffff",
       padding: "10px",
-      width: "auto",
+      width: "100%",
       fontSize: "16px",
       borderRadius: "0px",
       fontWeight: "normal",
+      border: "none",
+      lineHeight: "1.2",
+      // Enhanced margin controls for all directions
+      margin: "0px",
+      marginTop: "0px",
+      marginRight: "0px", 
+      marginBottom: "0px",
+      marginLeft: "0px",
+      textTransform: "none", // Added for select options
       objectFit: "contain",
     },
     outerStyle: {
@@ -45,13 +54,21 @@ export default [
     label: "Text",
     textarea: "Sample Text",
     style: {
-      backgroundColor: "",
+      backgroundColor: "#ffffff",
       color: "#000000",
       padding: "10px",
       textAlign: "center",
       fontSize: "22px",
       fontWeight: "normal",
-      textTransform: "uppercase", //lowercase , capitilized
+      textTransform: "uppercase",
+      lineHeight: "1.5",
+      letterSpacing: "0px",
+      // Enhanced margin controls for all directions
+      margin: "0px",
+      marginTop: "0px",
+      marginRight: "0px",
+      marginBottom: "0px", 
+      marginLeft: "0px",
     },
     outerStyle: {
       backgroundColor: "#fff",
@@ -70,8 +87,14 @@ export default [
       padding: "10px",
       height: "50%",
       width: "70%",
-      margin: "0px",
       borderRadius: "0px",
+      border: "1px solid #000000",
+      // Enhanced margin controls for all directions
+      margin: "0px",
+      marginTop: "0px",
+      marginRight: "0px",
+      marginBottom: "0px",
+      marginLeft: "0px",
     },
     outerStyle: {
       display: "flex",
@@ -93,6 +116,13 @@ export default [
       padding: "10px",
       height: "100%",
       width: "100%",
+      border: "none",
+      // Enhanced margin controls for all directions
+      margin: "0px",
+      marginTop: "0px",
+      marginRight: "0px",
+      marginBottom: "0px",
+      marginLeft: "0px",
     },
     outerStyle: {
       display: "flex",
@@ -106,7 +136,7 @@ export default [
     icon: PanelTop,
     type: "LogoHeader",
     label: "Logo Header",
-    imageUrl: "/logo.svg",
+    imageUrl: "/logo.png",
     alt: "logo",
     url: "#",
     style: {
@@ -114,6 +144,12 @@ export default [
       padding: "10px",
       height: "40%",
       width: "40%",
+      // Enhanced margin controls for all directions
+      margin: "0px",
+      marginTop: "0px",
+      marginRight: "0px",
+      marginBottom: "0px",
+      marginLeft: "0px",
     },
     outerStyle: {
       display: "flex",
@@ -132,11 +168,19 @@ export default [
       color: "#000000",
       padding: "10px",
       width: "100%",
+      height: "1px",
+      borderTop: "1px solid #000000",
+      // Enhanced margin controls for all directions
+      margin: "0px",
+      marginTop: "0px",
+      marginRight: "0px",
+      marginBottom: "0px",
+      marginLeft: "0px",
     },
   },
   {
     type: "SocialIcons",
-    icon: Instagram ,
+    icon: Instagram,
     label: "Social Icons",
     socialIcons: [
       {
@@ -169,10 +213,17 @@ export default [
     style: {
       width: 40,
       height: 40,
+      // Enhanced margin controls for all directions
+      margin: "10px",
+      marginTop: "10px",
+      marginRight: "10px",
+      marginBottom: "10px",
+      marginLeft: "10px",
     },
     outerStyle: {
       display: "flex",
       gap: 15,
+      justifyContent: "center",
     },
   },
 ];

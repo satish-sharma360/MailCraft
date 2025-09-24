@@ -1,8 +1,8 @@
 import React from "react";
 
-const ButtonComponent = ({ style, content, url }) => {
+const ButtonComponent = ({ outerStyle,style, content, url }) => {
   return (
-    <div>
+    <div style={outerStyle}>
       <a href={url}>
         <button style={style}>{content}</button>
       </a>
