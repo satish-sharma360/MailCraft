@@ -3,17 +3,17 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
-import AuthProvider from "./context/AuthContext.jsx";
+import {AuthProvider} from "./context/AuthContext.jsx";
 import DragDropLayoutElementProvider from "./context/DragDropLayoutElement.jsx";
-import EmailTemplateContextProvider from "./context/EmailTemplateContext.jsx";
+import { EmailTemplateProvider} from "./context/EmailTemplateContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>
       <DragDropLayoutElementProvider>
-        <EmailTemplateContextProvider>
+        <EmailTemplateProvider>
           <App />
-        </EmailTemplateContextProvider>
+        </EmailTemplateProvider>
       </DragDropLayoutElementProvider>
     </AuthProvider>
   </BrowserRouter>

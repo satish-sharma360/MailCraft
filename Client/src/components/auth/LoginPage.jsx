@@ -19,7 +19,7 @@ const LoginPage = () => {
     try {
       await login(form);
       alert("Login Successfully");
-      navigate('/')
+      navigate("/");
     } catch (error) {
       alert("Login failed...");
       alert(error.message);
@@ -29,8 +29,10 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">MailCraft</h1>
+        <div className="text-center flex items-center justify-center flex-col gap-8 mb-8">
+          <div className="h-14 w-56 overflow-hidden">
+            <img className="h-full w-full" src="/logo.png" alt="" />
+          </div>
           <p className="text-gray-600">Sign in to your account</p>
         </div>
 
@@ -42,7 +44,7 @@ const LoginPage = () => {
               </label>
               <input
                 type="email"
-                name="email" 
+                name="email"
                 value={form.email}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -77,7 +79,7 @@ const LoginPage = () => {
           <p className="text-gray-600">
             Don't have an account?{" "}
             <button
-              onClick={()=> navigate("/register")}
+              onClick={() => navigate("/register")}
               className="text-blue-600 hover:text-blue-700 font-medium"
             >
               Sign up

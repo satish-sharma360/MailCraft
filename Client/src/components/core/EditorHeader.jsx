@@ -6,9 +6,9 @@ const EditorHeader = ({value ,setValue}) => {
     <div className="w-full bg-[#ffffff] border border-gray-300 shadow">
       <div className="w-[90%] flex items-center justify-between mx-auto py-4">
         <div>
-          <h1 className="text-3xl font-bold">
-            Mail<span className="text-blue-500">Craft</span>
-          </h1>
+          <div className="h-14 w-56 overflow-hidden">
+            <img className="h-full w-full" src="/logo.png" alt="" />
+          </div>
         </div>
         <div className="flex items-center justify-center gap-4">
 

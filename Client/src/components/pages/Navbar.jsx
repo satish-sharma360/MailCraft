@@ -2,7 +2,6 @@ import React from "react";
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import { use } from "react";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -10,10 +9,8 @@ const Navbar = () => {
   return (
     <div className="w-full bg-[#ffffff] border border-gray-300 shadow">
       <div className="w-[90%] flex items-center justify-between mx-auto py-4">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Mail<span className="text-blue-500">Craft</span>
-          </h1>
+        <div className="h-14 w-auto overflow-hidden">
+          <img className="h-full w-full" src="/logo.png" alt="" />
         </div>
         {!user && (
           <div className="flex items-center justify-center gap-4">

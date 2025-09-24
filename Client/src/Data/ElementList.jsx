@@ -45,7 +45,7 @@ export default [
     label: "Text",
     textarea: "Sample Text",
     style: {
-      backgroundColor: "#fff",
+      backgroundColor: "",
       color: "#000000",
       padding: "10px",
       textAlign: "center",
@@ -62,7 +62,7 @@ export default [
     icon: Image,
     type: "Image",
     label: "Image",
-    imageUrl: "/image.png",
+    imageUrl: "/image.jpg",
     alt: "Image",
     url: "#",
     style: {
@@ -85,14 +85,14 @@ export default [
     icon: Frame,
     type: "Logo",
     label: "Logo",
-    imageUrl: "/logo.svg",
+    imageUrl: "/logo.png",
     alt: "logo",
     url: "#",
     style: {
       backgroundColor: "#ffffff",
       padding: "10px",
-      height: "30%",
-      width: "30%",
+      height: "100%",
+      width: "100%",
     },
     outerStyle: {
       display: "flex",

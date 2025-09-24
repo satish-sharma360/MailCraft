@@ -1,16 +1,26 @@
-import { useState } from "react";
-import { createContext } from "react";
+import { useEffect, useState, createContext } from "react";
 
-export const EmailTemplateContext = createContext()
+export const EmailTemplateContext = createContext();
 
-const EmailTemplateContextProvider = ({children}) =>{
-    const [emailTemplate , setEmailTemplate] = useState([])
+export const EmailTemplateProvider = ({ children }) => {
+  const [emailTemplate, setEmailTemplate] = useState(() => {
+    // Load initial value from localStorage
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("emailTemplate");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
 
-    return(
-        <EmailTemplateContext.Provider value={{emailTemplate ,setEmailTemplate}}>
-            {children}
-        </EmailTemplateContext.Provider>
-    )
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("emailTemplate", JSON.stringify(emailTemplate));
+    }
+  }, [emailTemplate]);
 
-}
-export default EmailTemplateContextProvider
+  return (
+    <EmailTemplateContext.Provider value={{ emailTemplate, setEmailTemplate }}>
+      {children}
+    </EmailTemplateContext.Provider>
+  );
+};

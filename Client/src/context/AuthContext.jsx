@@ -6,8 +6,24 @@ export const AuthContext = createContext();
 const API_URL = `${import.meta.env.VITE_BACKEND_URL}/auth`;
 console.log("🔗 API_URL:", API_URL);
 
-const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("user");
+      return saved ? JSON.parse(saved) : null;
+    }
+    return null;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      } else {
+        localStorage.removeItem("user");
+      }
+    }
+  }, [user]);
   const [accessToken, setAccessToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -114,4 +130,3 @@ const AuthProvider = ({ children }) => {
   );
 };
 
-export default AuthProvider;
