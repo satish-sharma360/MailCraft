@@ -1,9 +1,20 @@
 import React from 'react'
 
-const ImageComponent = ({style ,imageUrl,outerStyle,alt}) => {
+const ImageComponent = ({imageUrl, alt, url, style, outerStyle}) => {
   return (
-    <div style={outerStyle}>
-      <img src={imageUrl} alt={alt} style={style}/>
+    <div style={{ ...outerStyle }}>
+      <a href={url}>
+        <img
+          src={imageUrl}
+          alt={alt}
+          style={{
+            ...style,
+            objectFit: style?.objectFit || "contain",
+            objectPosition: style?.objectPosition || "center",
+            display: "block",
+          }}
+        />
+      </a>
     </div>
   )
 }

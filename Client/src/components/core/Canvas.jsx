@@ -30,12 +30,12 @@ const Canvas = ({ headerValue }) => {
     }
 
     return (
-        <div className="mt-20 flex justify-center">
+        <div className="mt-2 mb-20  flex justify-center">
             <div
-                className={` shadow-xl p-6 w-full 
+                className={`shadow-xl p-6 w-full 
              ${headerValue === "desktop" ? "max-w-2xl" : "max-w-md"} 
              ${dragOver ? "bg-purple-200 p-4" : "bg-white"}
-             `}
+             overflow-y-auto max-h-[80vh]`}
                 onDragOver={onDragOver}
                 onDrop={() => onDropHandle()}
             >

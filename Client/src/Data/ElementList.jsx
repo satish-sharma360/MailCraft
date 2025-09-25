@@ -35,8 +35,8 @@ export default [
       // Enhanced margin controls for all directions
       margin: "0px",
       marginTop: "0px",
-      marginRight: "0px", 
-      marginBottom: "0px",
+      marginRight: "0px",
+      marginBottom: "10px",
       marginLeft: "0px",
       textTransform: "none", // Added for select options
       objectFit: "contain",
@@ -54,25 +54,10 @@ export default [
     label: "Text",
     textarea: "Sample Text",
     style: {
-      backgroundColor: "#ffffff",
-      color: "#000000",
-      padding: "10px",
-      textAlign: "center",
-      fontSize: "22px",
-      fontWeight: "normal",
-      textTransform: "uppercase",
-      lineHeight: "1.5",
-      letterSpacing: "0px",
-      // Enhanced margin controls for all directions
-      margin: "0px",
-      marginTop: "0px",
-      marginRight: "0px",
-      marginBottom: "0px", 
-      marginLeft: "0px",
+      
     },
     outerStyle: {
-      backgroundColor: "#fff",
-      width: "100%",
+      
     },
   },
   {
@@ -85,10 +70,10 @@ export default [
     style: {
       backgroundColor: "#ffffff",
       padding: "10px",
-      height: "50%",
+      height: "200px",
       width: "70%",
       borderRadius: "0px",
-      border: "1px solid #000000",
+      border: "",
       // Enhanced margin controls for all directions
       margin: "0px",
       marginTop: "0px",

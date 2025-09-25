@@ -1,28 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import EditorHeader from "../core/EditorHeader";
 import ElementSidebar from "../core/ElementSidebar";
 import Canvas from "../core/Canvas";
 import Settings from "../core/Settings";
-import { useState } from "react";
 
 const EditorPage = () => {
-    const [screenSize , setScreenSize] = useState('')
+  const [screenSize, setScreenSize] = useState("");
+
   return (
-    <div className="">
-      <EditorHeader value={screenSize} setValue={setScreenSize}/>
-      <div className="grid grid-cols-5 gap-4">
+    <div className="flex flex-col h-screen">
+      {/* Header */}
+      <EditorHeader value={screenSize} setValue={setScreenSize} />
+
+      {/* Main content */}
+      <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}
-        <div className="col-span-1">
+        <div className="w-64 bg-white border-r border-gray-300 overflow-auto">
           <ElementSidebar />
         </div>
 
-        {/* Center canvas (3x space) */}
-        <div className="col-span-3 bg-gray-100">
-          <Canvas headerValue={screenSize}/>
+        {/* Center canvas */}
+        <div className="flex-1 bg-gray-100 overflow-hidden">
+          <Canvas headerValue={screenSize} />
         </div>
 
         {/* Right settings */}
-        <div className="col-span-1">
+        <div className="w-96 bg-white border-l border-gray-300 overflow-auto">
           <Settings />
         </div>
       </div>
