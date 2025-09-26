@@ -7,10 +7,11 @@ import cors from 'cors'
 import templateRouter from './routes/template.routes.js';
 import campaignRouter from './routes/campaign.routes.js';
 import contactRouter from './routes/contact.routes.js';
+import analyticsRouter from './routes/analytics.routes.js';
 
 const app = express()
 app.use(cookieParser())
-app.use(express.json())
+app.use(express.json());
 app.use(cors({
   origin: "http://localhost:5173",  
   credentials: true                  
@@ -22,6 +23,7 @@ app.use('/v1/auth',userRouter)
 app.use('/v1/template',templateRouter)
 app.use('/v1/campaign',campaignRouter)
 app.use('/v1/contact',contactRouter)
+app.use('/v1/analytics',analyticsRouter)
 
 app.get('/', (req, res) => {
     res.send('Server is up and running!');

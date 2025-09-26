@@ -35,8 +35,8 @@ class AuthController {
         }
     }
     async login(req, res) {
+        console.log(req.body)
         const { email, password } = req.body;
-        // --- Input validation for email and password ---
         if (!email || !password) {
             return res.status(400).json({ success: false, message: 'Both email and password are required.' });
         }

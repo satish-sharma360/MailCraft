@@ -16,6 +16,7 @@
     "grapesjs-plugin-export": "^1.0.12",
     "grapesjs-preset-newsletter": "^1.0.2",
     "lucide-react": "^0.544.0",
+    "papaparse": "^5.5.3",
     "react": "^19.1.1",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
@@ -23,6 +24,8 @@
     "react-email-editor": "^1.0.0",
     "react-quill": "^2.0.0",
     "react-router-dom": "^7.9.1",
+    "react-toastify": "^11.0.5",
+    "recharts": "^3.2.1",
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {

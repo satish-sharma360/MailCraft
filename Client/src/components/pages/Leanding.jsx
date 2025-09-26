@@ -1,7 +1,6 @@
 import React from "react";
 import Navbar from "./Navbar";
 import Leandingimg from "../../assets/landing.png";
-import Card from "../core/Card";
 
 const Leanding = () => {
   return (
@@ -32,7 +31,7 @@ const Leanding = () => {
         <div className="p-4">
           <p className="text-[2vw] text-center font-semibold mb-2 mt-8">Create Beautiful, Responsive Emails</p>
           <p className="text-[2vw] text-center text-blue-500 font-semibold mb-2">Right From Your Browser</p>
-          <div className="flex items-center justify-between gap-10">
+          {/* <div className="flex items-center justify-between gap-10">
             <Card
               title="Create Stunning Emails Instantly — No Sign-Up Required"
               subtitle="Start designing professional emails in seconds with our free drag-and-drop email builder. No registration, no hassle — just powerful, user-friendly email creation."
@@ -48,7 +47,7 @@ const Leanding = () => {
               subtitle="Generate optimized HTML email code with inline CSS. Copy and paste directly into Mailchimp, Gmail, HubSpot, or any major email platform."
               href="#"
             />
-          </div>
+          </div> */}
         </div>
       </section>
     </div>
