@@ -8,7 +8,5 @@ const userRouter = express.Router()
 userRouter.post('/signup',authController.signup)
 userRouter.post('/login',authController.login)
 userRouter.post('/refresh-token',authController.refreshToken)
-userRouter.post('/createTamplet',authMiddleware,templateController.createTemplate)
-userRouter.get('/get-current-user',authMiddleware,authController.getUser)
 
 export default userRouter

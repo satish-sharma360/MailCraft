@@ -4,6 +4,7 @@ import connectDb from './utils/dbConnection.js';
 import  config  from './config/config.js';
 import userRouter from './routes/user.route.js';
 import cors from 'cors'
+import templateRouter from './routes/template.routes.js';
 
 const app = express()
 app.use(cookieParser())
@@ -16,6 +17,7 @@ app.use(cors({
 const SERVERPORT = config.PORT || 7000;
 
 app.use('/v1/auth',userRouter)
+app.use('/v1/template',templateRouter)
 
 app.get('/', (req, res) => {
     res.send('Server is up and running!');

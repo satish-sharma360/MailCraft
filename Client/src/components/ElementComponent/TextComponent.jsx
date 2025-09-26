@@ -1,4 +1,6 @@
-import React, { useEffect, useImperativeHandle, useRef, useState } from "react";
+import React, { useEffect, useImperativeHandle, useRef, useState, useContext, useCallback } from "react";
+import { SelectedElement } from "../../context/SelectedElement";
+import { EmailTemplateContext } from "../../context/EmailTemplateContext";
 import {
   Bold,
   Italic,
@@ -11,8 +13,6 @@ import {
   List,
   ListOrdered,
   Link as LinkIcon,
-  Image as ImageIcon,
-  Table as TableIcon,
   Palette,
   Minus,
 } from "lucide-react";
@@ -21,37 +21,199 @@ export default function TextComponent(props, ref) {
   const editorRef = useRef(null);
   const toolbarRef = useRef(null);
   const [showToolbar, setShowToolbar] = useState(false);
-  const [activeFormats, setActiveFormats] = useState({});
-  const [padding, setPadding] = useState("16px");
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Get context to sync changes back to element
+  const { selectedElement, setSelectedElement } = useContext(SelectedElement);
+  const { setEmailTemplate } = useContext(EmailTemplateContext);
 
-  const exec = (cmd, val = null) => {
-    document.execCommand(cmd, false, val);
-    updateActiveFormats();
+  // Debounced sync to prevent excessive updates
+  const syncTimeoutRef = useRef(null);
+  
+  const syncContentToElement = useCallback(() => {
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+    
+    syncTimeoutRef.current = setTimeout(() => {
+      if (editorRef.current && selectedElement && selectedElement.layout && selectedElement.index) {
+        let htmlContent = editorRef.current.innerHTML;
+        
+        // Clean up HTML but preserve formatting
+        htmlContent = htmlContent
+          .replace(/&nbsp;/g, ' ')
+          .replace(/<br\s*\/?>/g, '<br>')
+          .replace(/<div><br><\/div>/g, '<br>')
+          .trim();
+        
+        // Don't update if content hasn't really changed
+        const currentElement = selectedElement.layout[selectedElement.index];
+        if (currentElement && currentElement.textarea === htmlContent) {
+          return;
+        }
+        
+        setSelectedElement(prev => ({
+          ...prev,
+          layout: {
+            ...prev.layout,
+            [prev.index]: {
+              ...prev.layout[prev.index],
+              textarea: htmlContent
+            }
+          }
+        }));
+
+        setEmailTemplate(prevTemplate => 
+          prevTemplate.map(column => {
+            if (column.id === selectedElement.layout.id) {
+              return {
+                ...column,
+                [selectedElement.index]: {
+                  ...column[selectedElement.index],
+                  textarea: htmlContent
+                }
+              };
+            }
+            return column;
+          })
+        );
+      }
+    }, 300); // 300ms debounce
+  }, [selectedElement, setSelectedElement, setEmailTemplate]);
+
+  // Format text using execCommand (most reliable method)
+  const formatText = (command, value = null) => {
+    if (!editorRef.current) return;
+    
     editorRef.current.focus();
+    
+    try {
+      document.execCommand(command, false, value);
+      syncContentToElement();
+    } catch (error) {
+      console.warn(`Command ${command} failed:`, error);
+    }
   };
 
-  const updateActiveFormats = () => {
-    setActiveFormats({
-      bold: document.queryCommandState("bold"),
-      italic: document.queryCommandState("italic"),
-      underline: document.queryCommandState("underline"),
-      strikeThrough: document.queryCommandState("strikeThrough"),
-      justifyLeft: document.queryCommandState("justifyLeft"),
-      justifyCenter: document.queryCommandState("justifyCenter"),
-      justifyRight: document.queryCommandState("justifyRight"),
-      justifyFull: document.queryCommandState("justifyFull"),
-      insertUnorderedList: document.queryCommandState("insertUnorderedList"),
-      insertOrderedList: document.queryCommandState("insertOrderedList"),
-    });
+  // Format handlers
+  const toggleBold = () => formatText('bold');
+  const toggleItalic = () => formatText('italic');
+  const toggleUnderline = () => formatText('underline');
+  const toggleStrikethrough = () => formatText('strikeThrough');
+  
+  const setTextAlign = (align) => {
+    const commands = {
+      left: 'justifyLeft',
+      center: 'justifyCenter',
+      right: 'justifyRight',
+      justify: 'justifyFull'
+    };
+    formatText(commands[align]);
   };
+  
+  const setTextColor = (color) => formatText('foreColor', color);
+  const setBackgroundColor = (color) => formatText('backColor', color);
+  
+  // Font size adjustment for selected text
+  const setFontSize = (size) => {
+    if (!editorRef.current) return;
+    
+    editorRef.current.focus();
+    
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      
+      if (!range.collapsed) {
+        const selectedText = range.toString();
+        const span = document.createElement('span');
+        span.style.fontSize = size;
+        span.textContent = selectedText;
+        
+        range.deleteContents();
+        range.insertNode(span);
+        
+        // Clear selection and place cursor after the span
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.setStartAfter(span);
+        newRange.setEndAfter(span);
+        selection.addRange(newRange);
+        
+        syncContentToElement();
+      }
+    }
+  };
+
+  // Font family adjustment for selected text
+  const setFontFamily = (fontFamily) => {
+    if (!editorRef.current) return;
+    
+    editorRef.current.focus();
+    
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      
+      if (!range.collapsed) {
+        const selectedText = range.toString();
+        const span = document.createElement('span');
+        span.style.fontFamily = fontFamily;
+        span.textContent = selectedText;
+        
+        range.deleteContents();
+        range.insertNode(span);
+        
+        // Clear selection and place cursor after the span
+        selection.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.setStartAfter(span);
+        newRange.setEndAfter(span);
+        selection.addRange(newRange);
+        
+        syncContentToElement();
+      }
+    }
+  };
+  
+  const insertBulletList = () => formatText('insertUnorderedList');
+  const insertNumberedList = () => formatText('insertOrderedList');
+  
+  const insertLink = () => {
+    const url = prompt('Enter URL:');
+    if (url) {
+      formatText('createLink', url);
+    }
+  };
+  
+  const clearFormatting = () => formatText('removeFormat');
 
   useImperativeHandle(ref, () => ({
-    getHTML: () => editorRef.current.innerHTML,
+    getHTML: () => editorRef.current?.innerHTML || '',
   }));
 
+  // Initialize editor with content
   useEffect(() => {
-    document.addEventListener("selectionchange", updateActiveFormats);
+    if (editorRef.current && selectedElement && selectedElement.layout && selectedElement.index && !isInitialized) {
+      const element = selectedElement.layout[selectedElement.index];
+      
+      if (element && element.textarea) {
+        editorRef.current.innerHTML = element.textarea;
+      } else {
+        editorRef.current.innerHTML = '<p>Start typing here...</p>';
+      }
+      
+      setIsInitialized(true);
+    }
+  }, [selectedElement, isInitialized]);
 
+  // Reset initialization when element changes
+  useEffect(() => {
+    setIsInitialized(false);
+  }, [selectedElement?.index]);
+
+  // Handle clicks outside to hide toolbar
+  useEffect(() => {
     const handleClickOutside = (e) => {
       if (
         editorRef.current &&
@@ -63,207 +225,309 @@ export default function TextComponent(props, ref) {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("selectionchange", updateActiveFormats);
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const insertTable = () => {
-    const table = `
-      <table border="1" style="border-collapse:collapse;width:100%">
-        <tr><td>Row 1 Col 1</td><td>Row 1 Col 2</td></tr>
-        <tr><td>Row 2 Col 1</td><td>Row 2 Col 2</td></tr>
-      </table>`;
-    exec("insertHTML", table);
+  // Input handler
+  const handleInput = () => {
+    syncContentToElement();
   };
 
-  const handleInput = () => {
-    const el = editorRef.current;
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
+  // Focus handler
+  const handleFocus = () => {
+    setShowToolbar(true);
+  };
+
+  // Blur handler
+  const handleBlur = () => {
+    // Small delay to allow toolbar clicks
+    setTimeout(() => {
+      if (!toolbarRef.current?.contains(document.activeElement)) {
+        setShowToolbar(false);
+      }
+    }, 150);
+  };
+
+  // Paste handler to clean pasted content
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
+    syncContentToElement();
+  };
+
+  // Get container styles from element settings
+  const getEditorStyles = () => {
+    const baseStyles = {
+      minHeight: '120px',
+      padding: '12px',
+      border: '1px solid #ddd',
+      borderRadius: '4px',
+      outline: 'none',
+      fontSize: '14px',
+      lineHeight: '1.5',
+      color: '#333',
+      backgroundColor: '#fff',
+      fontFamily: 'Arial, sans-serif',
+      wordWrap: 'break-word',
+      overflowWrap: 'break-word',
+    };
+
+    if (selectedElement && selectedElement.layout && selectedElement.index) {
+      const element = selectedElement.layout[selectedElement.index];
+      if (element?.style) {
+        return {
+          ...baseStyles,
+          fontSize: element.style.fontSize || baseStyles.fontSize,
+          color: element.style.color || baseStyles.color,
+          backgroundColor: element.style.backgroundColor || baseStyles.backgroundColor,
+          padding: element.style.padding || baseStyles.padding,
+          textAlign: element.style.textAlign || 'left',
+          fontWeight: element.style.fontWeight || 'normal',
+          borderRadius: element.style.borderRadius || baseStyles.borderRadius,
+        };
+      }
+    }
+    
+    return baseStyles;
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-gray-100 rounded">
+    <div className="w-full max-w-4xl mx-auto">
       {/* Toolbar */}
       {showToolbar && (
         <div
           ref={toolbarRef}
-          className="flex flex-wrap gap-2 p-2 border border-gray-300 rounded-t bg-gray-50 mb-1"
+          className="flex flex-wrap gap-1 p-2 bg-gray-50 border border-gray-300 rounded-t-md shadow-sm"
         >
-          {/* Formatting */}
+          {/* Text Formatting */}
           <button
-            onClick={() => exec("bold")}
-            className={activeFormats.bold ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggleBold}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Bold (Ctrl+B)"
           >
             <Bold size={16} />
           </button>
+          
           <button
-            onClick={() => exec("italic")}
-            className={activeFormats.italic ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggleItalic}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Italic (Ctrl+I)"
           >
             <Italic size={16} />
           </button>
+          
           <button
-            onClick={() => exec("underline")}
-            className={activeFormats.underline ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggleUnderline}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Underline (Ctrl+U)"
           >
             <Underline size={16} />
           </button>
+          
           <button
-            onClick={() => exec("strikeThrough")}
-            className={activeFormats.strikeThrough ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={toggleStrikethrough}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Strikethrough"
           >
             <Strikethrough size={16} />
           </button>
 
-          {/* Alignment */}
+          <div className="w-px bg-gray-300 mx-1" />
+
+          {/* Font Size */}
+          <div className="flex items-center">
+            <select
+              onChange={(e) => setFontSize(e.target.value)}
+              className="px-2 py-1 border rounded bg-white text-sm hover:bg-blue-50 transition-colors"
+              defaultValue=""
+              title="Font Size"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <option value="" disabled>Size</option>
+              <option value="8px">8px</option>
+              <option value="10px">10px</option>
+              <option value="12px">12px</option>
+              <option value="14px">14px</option>
+              <option value="16px">16px</option>
+              <option value="18px">18px</option>
+              <option value="20px">20px</option>
+              <option value="24px">24px</option>
+              <option value="28px">28px</option>
+              <option value="32px">32px</option>
+              <option value="36px">36px</option>
+              <option value="48px">48px</option>
+              <option value="72px">72px</option>
+            </select>
+          </div>
+
+          {/* Font Family */}
+          <div className="flex items-center">
+            <select
+              onChange={(e) => setFontFamily(e.target.value)}
+              className="px-2 py-1 border rounded bg-white text-sm hover:bg-blue-50 transition-colors"
+              defaultValue=""
+              title="Font Family"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <option value="" disabled>Font</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+              <option value="'Courier New', monospace">Courier New</option>
+              <option value="Tahoma, sans-serif">Tahoma</option>
+              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+              <option value="'Lucida Sans', sans-serif">Lucida Sans</option>
+              <option value="Impact, sans-serif">Impact</option>
+              <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+            </select>
+          </div>
+
+          <div className="w-px bg-gray-300 mx-1" />
+
+          {/* Text Alignment */}
           <button
-            onClick={() => exec("justifyLeft")}
-            className={activeFormats.justifyLeft ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setTextAlign('left')}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Align Left"
           >
             <AlignLeft size={16} />
           </button>
+          
           <button
-            onClick={() => exec("justifyCenter")}
-            className={activeFormats.justifyCenter ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setTextAlign('center')}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Align Center"
           >
             <AlignCenter size={16} />
           </button>
+          
           <button
-            onClick={() => exec("justifyRight")}
-            className={activeFormats.justifyRight ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setTextAlign('right')}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Align Right"
           >
             <AlignRight size={16} />
           </button>
+          
           <button
-            onClick={() => exec("justifyFull")}
-            className={activeFormats.justifyFull ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setTextAlign('justify')}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Justify"
           >
             <AlignJustify size={16} />
           </button>
 
+          <div className="w-px bg-gray-300 mx-1" />
+
           {/* Lists */}
           <button
-            onClick={() => exec("insertUnorderedList")}
-            className={activeFormats.insertUnorderedList ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={insertBulletList}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Bullet List"
           >
             <List size={16} />
           </button>
+          
           <button
-            onClick={() => exec("insertOrderedList")}
-            className={activeFormats.insertOrderedList ? "bg-purple-100" : ""}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={insertNumberedList}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Numbered List"
           >
             <ListOrdered size={16} />
           </button>
 
-          {/* Links, Images, Tables */}
+          <div className="w-px bg-gray-300 mx-1" />
+
+          {/* Link */}
           <button
-            onClick={() => {
-              const url = prompt("Enter URL");
-              if (url) exec("createLink", url);
-            }}
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={insertLink}
+            className="p-2 hover:bg-blue-100 rounded border bg-white transition-colors"
+            title="Insert Link"
           >
             <LinkIcon size={16} />
           </button>
-          <button
-            onClick={() => {
-              const url = prompt("Enter Image URL");
-              if (url) exec("insertImage", url);
-            }}
-          >
-            <ImageIcon size={16} />
-          </button>
-          <button onClick={insertTable}>
-            <TableIcon size={16} />
-          </button>
 
-          {/* Font Size & Font Family */}
-          <select
-            onChange={(e) => exec("fontSize", e.target.value)}
-            defaultValue="3"
-          >
-            <option value="1">8pt</option>
-            <option value="2">10pt</option>
-            <option value="3">12pt</option>
-            <option value="4">14pt</option>
-            <option value="5">18pt</option>
-            <option value="6">24pt</option>
-            <option value="7">36pt</option>
-          </select>
+          <div className="w-px bg-gray-300 mx-1" />
 
-          <select
-            onChange={(e) => exec("fontName", e.target.value)}
-            defaultValue="Arial"
-          >
-            <option>Arial</option>
-            <option>Times New Roman</option>
-            <option>Courier New</option>
-            <option>Georgia</option>
-            <option>Verdana</option>
-          </select>
+          {/* Colors */}
+          <div className="flex gap-1">
+            <div className="flex items-center">
+              <label className="flex items-center gap-1 p-2 hover:bg-blue-100 rounded border bg-white cursor-pointer transition-colors">
+                <Palette size={14} />
+                <input
+                  type="color"
+                  onChange={(e) => setTextColor(e.target.value)}
+                  className="w-4 h-4 border-0 rounded cursor-pointer"
+                  title="Text Color"
+                />
+              </label>
+            </div>
+            
+            <div className="flex items-center">
+              <label className="flex items-center gap-1 p-2 hover:bg-blue-100 rounded border bg-white cursor-pointer transition-colors">
+                <span className="text-xs font-medium">BG</span>
+                <input
+                  type="color"
+                  onChange={(e) => setBackgroundColor(e.target.value)}
+                  className="w-4 h-4 border-0 rounded cursor-pointer"
+                  title="Background Color"
+                />
+              </label>
+            </div>
+          </div>
 
-          {/* Text Color */}
-          <label className="flex items-center gap-1">
-            <Palette size={16} />
-            <input
-              type="color"
-              onChange={(e) => exec("foreColor", e.target.value)}
-              className="w-6 h-6 border rounded"
-              title="Text Color"
-            />
-          </label>
-
-          {/* Background Color */}
-          <label className="flex items-center gap-1">
-            <Palette size={16} />
-            <input
-              type="color"
-              onChange={(e) => exec("backColor", e.target.value)}
-              className="w-6 h-6 border rounded"
-              title="Background Color"
-            />
-          </label>
-
-          {/* Padding Control */}
-          <select
-            onChange={(e) => setPadding(e.target.value)}
-            defaultValue="16px"
-            title="Padding"
-          >
-            <option value="8px">Small Padding</option>
-            <option value="16px">Medium Padding</option>
-            <option value="24px">Large Padding</option>
-            <option value="32px">Extra Large</option>
-          </select>
+          <div className="w-px bg-gray-300 mx-1" />
 
           {/* Clear Formatting */}
-          <button onClick={() => exec("removeFormat")}>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={clearFormatting}
+            className="p-2 hover:bg-red-100 rounded border bg-white transition-colors"
+            title="Clear Formatting"
+          >
             <Minus size={16} />
           </button>
         </div>
       )}
 
-      {/* Editable Area */}
+      {/* Editor */}
       <div
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning
-        onFocus={() => setShowToolbar(true)}
         onInput={handleInput}
-        style={{
-          minHeight: "0px",
-          lineHeight: "",
-          backgroundColor: "transparent",
-          color: "#333",
-          padding: padding,
-        }}
-      >
-        Start typing here...
-      </div>
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onPaste={handlePaste}
+        style={getEditorStyles()}
+        className={`${showToolbar ? 'rounded-b-md' : 'rounded-md'} transition-all duration-200`}
+      />
     </div>
   );
 }

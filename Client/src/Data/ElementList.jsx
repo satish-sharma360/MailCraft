@@ -54,10 +54,17 @@ export default [
     label: "Text",
     textarea: "Sample Text",
     style: {
-      
+      backgroundColor: "#fff",
+      color: "#000000",
+      padding: "0px",
+      textAlign: "center",
+      fontSize: "12px",
+      fontWeight: "normal",
+      textTransform: "uppercase", //lowercase , capitilized
     },
     outerStyle: {
-      
+      backgroundColor: "#fff",
+      width: "100%",
     },
   },
   {

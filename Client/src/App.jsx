@@ -5,13 +5,14 @@ import RegisterPage from "./components/auth/RegisterPage";
 import Leanding from "./components/pages/Leanding";
 import Dashboard from "./components/pages/Dashboard";
 import EditorPage from "./components/Editor/EditorPage";
+import EmailDesigner from "./components/Email/EmailDesigner";
 
 const App = () => {
   return (
     <div>
       <Routes>
         <Route path="/" element={<Leanding/>}/>
-        <Route path="/test" element={<EditorPage/>}/>
+        <Route path="/test" element={<EmailDesigner/>}/>
         <Route path="/login" element={<LoginPage/>}/>
         <Route path="/register" element={<RegisterPage/>}/>
         <Route
