@@ -5,6 +5,7 @@ import  config  from './config/config.js';
 import userRouter from './routes/user.route.js';
 import cors from 'cors'
 import templateRouter from './routes/template.routes.js';
+import campaignRouter from './routes/campaign.routes.js';
 
 const app = express()
 app.use(cookieParser())
@@ -18,6 +19,7 @@ const SERVERPORT = config.PORT || 7000;
 
 app.use('/v1/auth',userRouter)
 app.use('/v1/template',templateRouter)
+app.use('/v1/campaign',campaignRouter)
 
 app.get('/', (req, res) => {
     res.send('Server is up and running!');
